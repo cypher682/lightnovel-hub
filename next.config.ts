@@ -22,8 +22,7 @@ const nextConfig = {
       },
     ]
   },
-module.exports = nextConfig
-module.exports = {
+  // Merge the ESLint and TypeScript ignores into the main config
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -32,3 +31,4 @@ module.exports = {
   }
 }
 
+module.exports = nextConfig
