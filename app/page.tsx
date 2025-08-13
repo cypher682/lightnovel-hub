@@ -1,103 +1,221 @@
-import Image from "next/image";
+// app/page.tsx
+'use client'
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase'
+import { NovelGrid } from '@/components/novels/NovelGrid'
+import { FilterSidebar } from '@/components/filters/FilterSidebar'
+import { Search, Filter, Sparkles } from 'lucide-react'
+import { Database } from '@/types/database.types'
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+type LightNovel = Database['public']['Tables']['light_novels']['Row'] & {
+  regions: Database['public']['Tables']['regions']['Row']
+  novel_genres: Array<{
+    genres: Database['public']['Tables']['genres']['Row']
+  }>
 }
+
+export default function HomePage() {
+  const [novels, setNovels] = useState<LightNovel[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedRegions, setSelectedRegions] = useState<number[]>([])
+  const [selectedGenres, setSelectedGenres] = useState<number[]>([])
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([])
+  const [showMobileFilters, setShowMobileFilters] = useState(false)
+
+  useEffect(() => {
+    fetchNovels()
+  }, [selectedRegions, selectedGenres, selectedStatus, searchTerm])
+
+  const fetchNovels = async () => {
+    setLoading(true)
+    
+    let query = supabase
+      .from('light_novels')
+      .select(`
+        *,
+        regions (*),
+        novel_genres (
+          genres (*)
+        )
+      `)
+
+    // Apply filters
+    if (selectedRegions.length > 0) {
+      query = query.in('region_id', selectedRegions)
+    }
+
+    if (selectedStatus.length > 0) {
+      query = query.in('status', selectedStatus)
+    }
+
+    if (searchTerm) {
+      query = query.or(`title.ilike.%${searchTerm}%,author.ilike.%${searchTerm}%`)
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching novels:', error)
+      setLoading(false)
+      return
+    }
+
+    let filteredData = data || []
+
+    // Filter by genres (client-side because of junction table)
+    if (selectedGenres.length > 0) {
+      filteredData = filteredData.filter(novel =>
+        novel.novel_genres.some(ng => selectedGenres.includes(ng.genres.id))
+      )
+    }
+
+    setNovels(filteredData)
+    setLoading(false)
+  }
+
+  const clearFilters = () => {
+    setSelectedRegions([])
+    setSelectedGenres([])
+    setSelectedStatus([])
+    setSearchTerm('')
+  }
+
+  const hasActiveFilters = selectedRegions.length > 0 || selectedGenres.length > 0 || selectedStatus.length > 0 || searchTerm
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      {/* Hero Section */}
+      <div className="text-center mb-12">
+        <div className="flex items-center justify-center mb-4">
+          <Sparkles className="text-yellow-500 mr-2" size={32} />
+          <h1 className="text-4xl font-bold text-gray-800">
+            Discover Amazing Light Novels
+          </h1>
+          <Sparkles className="text-yellow-500 ml-2" size={32} />
+        </div>
+        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          Explore light novels from Japan, China, and Korea. Join our community to discuss your favorites!
+        </p>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-8">
+        <div className="relative max-w-2xl mx-auto">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search by title or author..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
+        </div>
+      </div>
+
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-80 flex-shrink-0">
+          <div className="sticky top-24">
+            <FilterSidebar
+              selectedRegions={selectedRegions}
+              selectedGenres={selectedGenres}
+              selectedStatus={selectedStatus}
+              onRegionChange={setSelectedRegions}
+              onGenreChange={setSelectedGenres}
+              onStatusChange={setSelectedStatus}
+              onClear={clearFilters}
+            />
+          </div>
+        </div>
+
+        {/* Mobile Filter Button */}
+        <div className="lg:hidden mb-4">
+          <button
+            onClick={() => setShowMobileFilters(true)}
+            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            <Filter size={18} />
+            <span>Filters</span>
+            {hasActiveFilters && (
+              <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                !
+              </span>
+            )}
+          </button>
+        </div>
+
+        {/* Mobile Filter Modal */}
+        {showMobileFilters && (
+          <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+            <div className="bg-white h-full overflow-y-auto">
+              <FilterSidebar
+                selectedRegions={selectedRegions}
+                selectedGenres={selectedGenres}
+                selectedStatus={selectedStatus}
+                onRegionChange={setSelectedRegions}
+                onGenreChange={setSelectedGenres}
+                onStatusChange={setSelectedStatus}
+                onClear={clearFilters}
+                isMobile={true}
+                onClose={() => setShowMobileFilters(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Main Content */}
+        <div className="flex-1">
+          {/* Results Header */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                {searchTerm ? `Search Results for "${searchTerm}"` : 'All Light Novels'}
+              </h2>
+              <p className="text-gray-600">
+                {loading ? 'Loading...' : `${novels.length} novels found`}
+              </p>
+            </div>
+          </div>
+
+          {/* Active Filters */}
+          {hasActiveFilters && (
+            <div className="mb-6">
+              <div className="flex flex-wrap gap-2">
+                {/* Region filters */}
+                {selectedRegions.map(regionId => {
+                  // You'd need to fetch region names for display
+                  return (
+                    <span key={`region-${regionId}`} className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">
+                      Region {regionId}
+                    </span>
+                  )
+                })}
+                
+                {/* Status filters */}
+                {selectedStatus.map(status => (
+                  <span key={`status-${status}`} className="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full capitalize">
+                    {status}
+                  </span>
+                ))}
+                
+                {/* Clear all button */}
+                <button
+                  onClick={clearFilters}
+                  className="text-gray-500 hover:text-gray-700 text-sm underline"
+                >
+                  Clear all
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Novel Grid */}
+          <NovelGrid novels={novels} loading={loading} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
