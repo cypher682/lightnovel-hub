@@ -22,8 +22,6 @@ const nextConfig = {
       },
     ]
   },
-}
-
 module.exports = nextConfig
 module.exports = {
   eslint: {
@@ -33,3 +31,4 @@ module.exports = {
     ignoreBuildErrors: true,
   }
 }
+
