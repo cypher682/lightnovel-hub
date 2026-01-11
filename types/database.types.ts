@@ -1,3 +1,8 @@
+export type NovelLink = {
+  name: string
+  url: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -79,8 +84,8 @@ export interface Database {
           status: 'ongoing' | 'completed' | 'hiatus' | 'dropped'
           publication_year: number | null
           total_chapters: number | null
-          official_links: any
-          translation_links: any
+          official_links: NovelLink[] | null
+          translation_links: NovelLink[] | null
           created_at: string
           updated_at: string
           created_by: string | null
@@ -96,8 +101,8 @@ export interface Database {
           status: 'ongoing' | 'completed' | 'hiatus' | 'dropped'
           publication_year?: number | null
           total_chapters?: number | null
-          official_links?: any
-          translation_links?: any
+          official_links?: NovelLink[] | null
+          translation_links?: NovelLink[] | null
           created_at?: string
           updated_at?: string
           created_by?: string | null
@@ -113,8 +118,8 @@ export interface Database {
           status?: 'ongoing' | 'completed' | 'hiatus' | 'dropped'
           publication_year?: number | null
           total_chapters?: number | null
-          official_links?: any
-          translation_links?: any
+          official_links?: NovelLink[] | null
+          translation_links?: NovelLink[] | null
           created_at?: string
           updated_at?: string
           created_by?: string | null

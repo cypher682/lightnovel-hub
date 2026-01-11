@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/contexts/AuthContext'
 import { 
   Star, 
   BookOpen, 
@@ -14,10 +12,11 @@ import {
   User,
   Globe
 } from 'lucide-react'
-import { Database } from '@/types/database.types'
+import { Database, NovelLink } from '@/types/database.types'
 import toast from 'react-hot-toast'
 import Link from 'next/link'
 import Image from 'next/image'
+import { mockNovels, mockReviews } from '@/lib/mock-data'
 
 type LightNovel = Database['public']['Tables']['light_novels']['Row'] & {
   regions: Database['public']['Tables']['regions']['Row']
@@ -34,10 +33,8 @@ type Review = Database['public']['Tables']['reviews']['Row'] & {
 
 export default function NovelDetailPage() {
   const params = useParams()
-  const { user } = useAuth()
   const [novel, setNovel] = useState<LightNovel | null>(null)
   const [reviews, setReviews] = useState<Review[]>([])
-  const [userReading, setUserReading] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showAddToList, setShowAddToList] = useState(false)
 
@@ -47,92 +44,27 @@ export default function NovelDetailPage() {
     if (novelId) {
       fetchNovel()
       fetchReviews()
-      if (user) {
-        fetchUserReading()
-      }
     }
-  }, [novelId, user])
+  }, [novelId])
 
   const fetchNovel = async () => {
-    const { data, error } = await supabase
-      .from('light_novels')
-      .select(`
-        *,
-        regions (*),
-        novel_genres (
-          genres (*)
-        )
-      `)
-      .eq('id', novelId)
-      .single()
-
-    if (error) {
-      console.error('Error fetching novel:', error)
-      return
-    }
-
-    setNovel(data)
-    setLoading(false)
+    setTimeout(() => {
+      const foundNovel = mockNovels.find((n) => n.id === novelId)
+      setNovel(foundNovel || null)
+      setLoading(false)
+    }, 300)
   }
 
   const fetchReviews = async () => {
-    const { data, error } = await supabase
-      .from('reviews')
-      .select(`
-        *,
-        profiles (username)
-      `)
-      .eq('novel_id', novelId)
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      console.error('Error fetching reviews:', error)
-      return
-    }
-
-    setReviews(data || [])
-  }
-
-  const fetchUserReading = async () => {
-    if (!user) return
-
-    const { data, error } = await supabase
-      .from('reading_lists')
-      .select('*')
-      .eq('novel_id', novelId)
-      .eq('user_id', user.id)
-      .single()
-
-    if (data) {
-      setUserReading(data)
-    }
+    setTimeout(() => {
+      const novelReviews = mockReviews.filter((r) => r.novel_id === novelId)
+      setReviews(novelReviews)
+    }, 300)
   }
 
   const addToReadingList = async (status: string) => {
-    if (!user) {
-      toast.error('Please login to add to reading list')
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('reading_lists')
-        .upsert([
-          {
-            user_id: user.id,
-            novel_id: novelId,
-            status,
-          },
-        ])
-
-      if (error) throw error
-
-      toast.success('Added to reading list!')
-      fetchUserReading()
-      setShowAddToList(false)
-    } catch (error: any) {
-      toast.error(error.message)
-    }
+    toast.success(`Added to ${status.replace('_', ' ')} list!`)
+    setShowAddToList(false)
   }
 
   const formatDate = (dateString: string) => {
@@ -141,7 +73,7 @@ export default function NovelDetailPage() {
 
   const getAverageRating = () => {
     if (reviews.length === 0) return 0
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
+    const sum = reviews.reduce((acc: number, review: Review) => acc + review.rating, 0)
     return (sum / reviews.length).toFixed(1)
   }
 
@@ -180,10 +112,8 @@ export default function NovelDetailPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Novel Header */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Cover Image */}
           <div className="w-full lg:w-80 flex-shrink-0">
             <div className="relative h-96 w-full lg:w-80 mx-auto">
               {novel.cover_image_url ? (
@@ -201,7 +131,6 @@ export default function NovelDetailPage() {
             </div>
           </div>
 
-          {/* Novel Info */}
           <div className="flex-1">
             <div className="mb-4">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">{novel.title}</h1>
@@ -223,19 +152,17 @@ export default function NovelDetailPage() {
               </div>
             </div>
 
-            {/* Genres */}
             <div className="flex flex-wrap gap-2 mb-4">
-              {novel.novel_genres.map(({ genres }) => (
+              {novel.novel_genres.map((ng) => (
                 <span
-                  key={genres.id}
+                  key={ng.genres.id}
                   className="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full"
                 >
-                  {genres.name}
+                  {ng.genres.name}
                 </span>
               ))}
             </div>
 
-            {/* Status and Rating */}
             <div className="flex items-center space-x-6 mb-6">
               <div className="flex items-center space-x-2">
                 <span className={`w-3 h-3 rounded-full ${
@@ -259,7 +186,6 @@ export default function NovelDetailPage() {
               )}
             </div>
 
-            {/* Action Buttons */}
             <div className="flex flex-wrap gap-3 mb-6">
               <div className="relative">
                 <button
@@ -267,7 +193,7 @@ export default function NovelDetailPage() {
                   className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
                 >
                   <Plus size={16} />
-                  <span>{userReading ? 'Update Status' : 'Add to List'}</span>
+                  <span>Add to List</span>
                 </button>
                 
                 {showAddToList && (
@@ -294,13 +220,12 @@ export default function NovelDetailPage() {
               </Link>
             </div>
 
-            {/* Links */}
             <div className="space-y-2">
               {novel.official_links && novel.official_links.length > 0 && (
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-2">Official Links</h3>
                   <div className="space-y-1">
-                    {novel.official_links.map((link: any, index: number) => (
+                    {novel.official_links.map((link: NovelLink, index: number) => (
                       <a
                         key={index}
                         href={link.url}
@@ -320,7 +245,7 @@ export default function NovelDetailPage() {
                 <div>
                   <h3 className="font-semibold text-gray-800 mb-2">Translation Links</h3>
                   <div className="space-y-1">
-                    {novel.translation_links.map((link: any, index: number) => (
+                    {novel.translation_links.map((link: NovelLink, index: number) => (
                       <a
                         key={index}
                         href={link.url}
@@ -340,21 +265,20 @@ export default function NovelDetailPage() {
         </div>
       </div>
 
-      {/* Summary */}
       <div className="bg-white rounded-lg shadow-md p-6 mb-8">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">Summary</h2>
         <p className="text-gray-700 leading-relaxed">{novel.summary}</p>
       </div>
 
-      {/* Reviews Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-800">Reviews</h2>
-          {user && (
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
-              Write Review
-            </button>
-          )}
+          <button 
+            onClick={() => toast.info('Review submission coming soon!')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Write Review
+          </button>
         </div>
 
         {reviews.length === 0 ? (
@@ -365,7 +289,7 @@ export default function NovelDetailPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {reviews.map((review: Review) => (
               <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0">
                 <div className="flex items-start justify-between mb-3">
                   <div>

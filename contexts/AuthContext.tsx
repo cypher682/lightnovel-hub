@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import { User, Session, AuthChangeEvent } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { Database } from '@/types/database.types'
 
@@ -49,23 +49,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        setSession(session)
+        setUser(session?.user ?? null)
+      } catch (error) {
+        console.warn('Auth initialization error:', error)
+        setSession(null)
+        setUser(null)
+      } finally {
+        setLoading(false)
+      }
+    }
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    initAuth()
 
-    return () => subscription.unsubscribe()
+    try {
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+        setSession(session)
+        setUser(session?.user ?? null)
+        setLoading(false)
+      })
+
+      return () => {
+        if (subscription) {
+          subscription.unsubscribe()
+        }
+      }
+    } catch (error) {
+      console.warn('Auth state change subscription error:', error)
+      setLoading(false)
+      return () => {}
+    }
   }, [])
 
   useEffect(() => {
@@ -77,7 +95,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user])
 
   const signOut = async () => {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.warn('Sign out error:', error)
+    }
   }
 
   const value = {

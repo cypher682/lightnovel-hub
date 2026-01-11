@@ -1,9 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 import { ChevronDown, ChevronUp, X } from 'lucide-react'
 import { Database } from '@/types/database.types'
+import { mockRegions, mockGenres } from '@/lib/mock-data'
 
 type Region = Database['public']['Tables']['regions']['Row']
 type Genre = Database['public']['Tables']['genres']['Row']
@@ -47,18 +47,9 @@ export function FilterSidebar({
   ]
 
   useEffect(() => {
-    fetchFilters()
+    setRegions(mockRegions)
+    setGenres(mockGenres)
   }, [])
-
-  const fetchFilters = async () => {
-    const [regionsResult, genresResult] = await Promise.all([
-      supabase.from('regions').select('*').order('name'),
-      supabase.from('genres').select('*').order('name'),
-    ])
-
-    if (regionsResult.data) setRegions(regionsResult.data)
-    if (genresResult.data) setGenres(genresResult.data)
-  }
 
   const toggleSection = (section: keyof typeof expandedSections) => {
     setExpandedSections(prev => ({
@@ -89,31 +80,30 @@ export function FilterSidebar({
   }
 
   return (
-    <div className={`bg-white ${isMobile ? 'h-full' : 'rounded-lg shadow-md'} p-6`}>
+    <div className={`bg-white dark:bg-gray-800 ${isMobile ? 'h-full' : 'rounded-lg shadow-md'} p-6 transition-colors`}>
       {isMobile && (
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Filters</h2>
-          <button onClick={onClose} className="text-gray-500">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">Filters</h2>
+          <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
             <X size={24} />
           </button>
         </div>
       )}
 
       <div className="flex items-center justify-between mb-6">
-        {!isMobile && <h2 className="text-xl font-bold">Filters</h2>}
+        {!isMobile && <h2 className="text-xl font-bold text-gray-800 dark:text-white">Filters</h2>}
         <button
           onClick={onClear}
-          className="text-blue-600 hover:text-blue-700 text-sm font-medium"
+          className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 text-sm font-medium"
         >
           Clear All
         </button>
       </div>
 
-      {/* Regions */}
       <div className="mb-6">
         <button
           onClick={() => toggleSection('regions')}
-          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 mb-3"
+          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 dark:text-white mb-3"
         >
           Region
           {expandedSections.regions ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -121,25 +111,24 @@ export function FilterSidebar({
         {expandedSections.regions && (
           <div className="space-y-2">
             {regions.map((region) => (
-              <label key={region.id} className="flex items-center">
+              <label key={region.id} className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedRegions.includes(region.id)}
                   onChange={() => handleRegionToggle(region.id)}
-                  className="mr-2"
+                  className="mr-2 cursor-pointer"
                 />
-                <span className="text-sm">{region.name}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{region.name}</span>
               </label>
             ))}
           </div>
         )}
       </div>
 
-      {/* Genres */}
       <div className="mb-6">
         <button
           onClick={() => toggleSection('genres')}
-          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 mb-3"
+          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 dark:text-white mb-3"
         >
           Genre
           {expandedSections.genres ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -147,25 +136,24 @@ export function FilterSidebar({
         {expandedSections.genres && (
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {genres.map((genre) => (
-              <label key={genre.id} className="flex items-center">
+              <label key={genre.id} className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedGenres.includes(genre.id)}
                   onChange={() => handleGenreToggle(genre.id)}
-                  className="mr-2"
+                  className="mr-2 cursor-pointer"
                 />
-                <span className="text-sm">{genre.name}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{genre.name}</span>
               </label>
             ))}
           </div>
         )}
       </div>
 
-      {/* Status */}
       <div className="mb-6">
         <button
           onClick={() => toggleSection('status')}
-          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 mb-3"
+          className="flex items-center justify-between w-full text-left font-semibold text-gray-800 dark:text-white mb-3"
         >
           Status
           {expandedSections.status ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -173,14 +161,14 @@ export function FilterSidebar({
         {expandedSections.status && (
           <div className="space-y-2">
             {statusOptions.map((option) => (
-              <label key={option.value} className="flex items-center">
+              <label key={option.value} className="flex items-center cursor-pointer">
                 <input
                   type="checkbox"
                   checked={selectedStatus.includes(option.value)}
                   onChange={() => handleStatusToggle(option.value)}
-                  className="mr-2"
+                  className="mr-2 cursor-pointer"
                 />
-                <span className="text-sm">{option.label}</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
               </label>
             ))}
           </div>

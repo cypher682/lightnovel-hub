@@ -1,0 +1,17 @@
+export const mockGenres = [
+  { id: 1, name: 'Action', created_at: '2024-01-01T00:00:00Z' },
+  { id: 2, name: 'Adventure', created_at: '2024-01-01T00:00:00Z' },
+  { id: 3, name: 'Fantasy', created_at: '2024-01-01T00:00:00Z' },
+  { id: 4, name: 'Romance', created_at: '2024-01-01T00:00:00Z' },
+  { id: 5, name: 'Sci-Fi', created_at: '2024-01-01T00:00:00Z' },
+  { id: 6, name: 'Mystery', created_at: '2024-01-01T00:00:00Z' },
+  { id: 7, name: 'Comedy', created_at: '2024-01-01T00:00:00Z' },
+  { id: 8, name: 'Drama', created_at: '2024-01-01T00:00:00Z' },
+  { id: 9, name: 'Slice of Life', created_at: '2024-01-01T00:00:00Z' },
+  { id: 10, name: 'Isekai', created_at: '2024-01-01T00:00:00Z' },
+  { id: 11, name: 'Cultivation', created_at: '2024-01-01T00:00:00Z' },
+  { id: 12, name: 'Martial Arts', created_at: '2024-01-01T00:00:00Z' },
+  { id: 13, name: 'Supernatural', created_at: '2024-01-01T00:00:00Z' },
+  { id: 14, name: 'Psychological', created_at: '2024-01-01T00:00:00Z' },
+  { id: 15, name: 'Horror', created_at: '2024-01-01T00:00:00Z' },
+]

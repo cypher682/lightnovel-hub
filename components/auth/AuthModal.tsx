@@ -43,7 +43,6 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
         if (error) throw error
         
         if (data.user) {
-          // Create profile
           const { error: profileError } = await supabase
             .from('profiles')
             .insert([
@@ -59,8 +58,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           onClose()
         }
       }
-    } catch (error: any) {
-      toast.error(error.message)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Authentication failed'
+      toast.error(errorMessage)
     } finally {
       setLoading(false)
     }

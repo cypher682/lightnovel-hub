@@ -19,14 +19,14 @@ interface NovelCardProps {
 export function NovelCard({ novel }: NovelCardProps) {
   return (
     <Link href={`/novel/${novel.id}`}>
-      <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200 overflow-hidden">
-        <div className="relative h-64 w-full">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden group transform hover:-translate-y-1">
+        <div className="relative h-64 w-full overflow-hidden">
           {novel.cover_image_url ? (
             <Image
               src={novel.cover_image_url}
               alt={novel.title}
               fill
-              className="object-cover"
+              className="object-cover group-hover:scale-110 transition-transform duration-300"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
@@ -41,27 +41,27 @@ export function NovelCard({ novel }: NovelCardProps) {
         </div>
         
         <div className="p-4">
-          <h3 className="font-bold text-lg text-gray-800 mb-1 line-clamp-2">
+          <h3 className="font-bold text-lg text-gray-800 dark:text-white mb-1 line-clamp-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {novel.title}
           </h3>
-          <p className="text-gray-600 text-sm mb-2">by {novel.author}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2">by {novel.author}</p>
           
           <div className="flex flex-wrap gap-1 mb-3">
             {novel.novel_genres?.slice(0, 3).map(({ genres }) => (
               <span
                 key={genres.id}
-                className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded"
+                className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs px-2 py-1 rounded"
               >
                 {genres.name}
               </span>
             ))}
           </div>
           
-          <p className="text-gray-700 text-sm line-clamp-3 mb-3">
+          <p className="text-gray-700 dark:text-gray-300 text-sm line-clamp-3 mb-3">
             {novel.summary}
           </p>
           
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
             <span className="flex items-center space-x-1">
               <span className={`w-2 h-2 rounded-full ${
                 novel.status === 'ongoing' ? 'bg-green-500' :

@@ -9,19 +9,10 @@ export function ChatLayout() {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [showSidebar, setShowSidebar] = useState(false)
 
-  // Auto-select first room on mobile
-  useEffect(() => {
-    if (!selectedRoomId) {
-      // You might want to fetch the first room ID here
-      // For now, we'll handle this in the ChatRoomList component
-    }
-  }, [])
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white rounded-lg shadow-md overflow-hidden">
         <div className="flex h-[600px]">
-          {/* Sidebar - Desktop */}
           <div className="hidden md:block w-80 border-r bg-gray-50 p-4">
             <ChatRoomList
               selectedRoomId={selectedRoomId}
@@ -29,7 +20,6 @@ export function ChatLayout() {
             />
           </div>
 
-          {/* Mobile Sidebar Overlay */}
           {showSidebar && (
             <div className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
               <div className="bg-white w-80 h-full p-4">
@@ -53,9 +43,7 @@ export function ChatLayout() {
             </div>
           )}
 
-          {/* Chat Area */}
           <div className="flex-1 flex flex-col">
-            {/* Mobile Header */}
             <div className="md:hidden flex items-center justify-between p-4 border-b">
               <button
                 onClick={() => setShowSidebar(true)}
@@ -67,14 +55,12 @@ export function ChatLayout() {
               <div></div>
             </div>
 
-            {/* Chat Content */}
             <div className="flex-1 p-4">
               {selectedRoomId ? (
                 <ChatRoom roomId={selectedRoomId} />
               ) : (
                 <div className="flex items-center justify-center h-full">
                   <div className="text-center">
-                    <div className="text-6xl mb-4">💬</div>
                     <h3 className="text-xl font-semibold text-gray-600 mb-2">
                       Welcome to Chat
                     </h3>

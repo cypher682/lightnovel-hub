@@ -1,5 +1,3 @@
-import { AlertCircle } from 'lucide-react'
-
 interface ErrorMessageProps {
   message: string
   onRetry?: () => void
@@ -7,18 +5,26 @@ interface ErrorMessageProps {
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center">
-      <AlertCircle size={48} className="text-red-500 mb-4" />
-      <h3 className="text-lg font-semibold text-gray-800 mb-2">Something went wrong</h3>
-      <p className="text-gray-600 mb-4">{message}</p>
-      {onRetry && (
-        <button
-          onClick={onRetry}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-        >
-          Try Again
-        </button>
-      )}
+    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 my-4">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
+        </div>
+        <div className="ml-3 flex-1">
+          <h3 className="text-sm font-medium text-red-800 dark:text-red-200">Error</h3>
+          <p className="mt-1 text-sm text-red-700 dark:text-red-300">{message}</p>
+          {onRetry && (
+            <button
+              onClick={onRetry}
+              className="mt-2 text-sm font-medium text-red-600 dark:text-red-400 hover:text-red-500 dark:hover:text-red-300"
+            >
+              Try again
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

@@ -22,13 +22,6 @@ const nextConfig = {
       },
     ]
   },
-  // Merge the ESLint and TypeScript ignores into the main config
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  }
 }
 
 module.exports = nextConfig
