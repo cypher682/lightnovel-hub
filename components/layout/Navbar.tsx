@@ -1,14 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AuthButton } from '@/components/auth/AuthButton'
 import { Book, MessageCircle, Search, Menu, X, Moon, Sun } from 'lucide-react'
 import { useTheme } from '@/contexts/ThemeContext'
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const { theme, toggleTheme } = useTheme()
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <nav className="bg-white dark:bg-gray-800 shadow-md sticky top-0 z-40 transition-colors duration-200">
@@ -31,17 +36,19 @@ export function Navbar() {
               <Search size={18} />
               <span>Search</span>
             </Link>
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? (
-                <Moon size={20} className="text-gray-600 dark:text-gray-300" />
-              ) : (
-                <Sun size={20} className="text-gray-300" />
-              )}
-            </button>
+            {mounted && (
+              <button
+                onClick={toggleTheme}
+                className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                aria-label="Toggle theme"
+              >
+                {theme === 'light' ? (
+                  <Moon size={20} className="text-gray-600 dark:text-gray-300" />
+                ) : (
+                  <Sun size={20} className="text-gray-300" />
+                )}
+              </button>
+            )}
             <AuthButton />
           </div>
 
@@ -78,17 +85,19 @@ export function Navbar() {
                 Search
               </Link>
               <div className="px-3 py-2 flex items-center space-x-3">
-                <button
-                  onClick={toggleTheme}
-                  className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
-                  aria-label="Toggle theme"
-                >
-                  {theme === 'light' ? (
-                    <Moon size={20} className="text-gray-600" />
-                  ) : (
-                    <Sun size={20} className="text-gray-300" />
-                  )}
-                </button>
+                {mounted && (
+                  <button
+                    onClick={toggleTheme}
+                    className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                    aria-label="Toggle theme"
+                  >
+                    {theme === 'light' ? (
+                      <Moon size={20} className="text-gray-600" />
+                    ) : (
+                      <Sun size={20} className="text-gray-300" />
+                    )}
+                  </button>
+                )}
                 <AuthButton />
               </div>
             </div>
