@@ -266,12 +266,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**Your Name**
+**Suleiman Abdulrahman**
 
-- Portfolio: [yourportfolio.com](https://yourportfolio.com)
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your Name](https://linkedin.com/in/yourname)
-- Email: your.email@example.com
+- Portfolio: [yourportfolio.com](https://suleiman-cipher.vercel.app)
+- GitHub: [@yourusername](https://github.com/cypher682)
+- Email: cipherorion682@gmail.com
 
 ---
 
